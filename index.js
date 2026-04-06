@@ -177,20 +177,25 @@ const app = express();
 
 app.use(helmet());
 app.use(express.json({ limit: '64kb' }));   // prevent oversized payloads
-// CORS: accetta tutte le origini configurate (virgola-separata in env)
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '')
+// CORS: accetta origini dalla variabile ALLOWED_ORIGINS (o tutte se *)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.ALLOWED_ORIGIN || '*')
   .split(',').map(o => o.trim()).filter(Boolean);
+const allowAll = allowedOrigins.includes('*');
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Permetti richieste senza origin (Postman, curl, file://) e origini configurate
-    if(!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    // Permetti sempre richieste senza origin (curl, Postman, mobile)
+    if(!origin) return callback(null, true);
+    // Permetti tutto se ALLOWED_ORIGINS=*
+    if(allowAll) return callback(null, true);
+    // Controlla lista origini
+    if(allowedOrigins.includes(origin)) return callback(null, true);
+    // Blocca
     callback(new Error('CORS: origine non consentita: ' + origin));
   },
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'X-User-Id', 'Authorization'],
+  credentials: true,
 }));
 
 // ─── Firebase token verification middleware ──────────────────────────────────
