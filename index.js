@@ -256,7 +256,7 @@ app.post('/api/chat', burstLimiter, async (req, res) => {
 
   const resolvedModel      = typeof model === 'string' && /^claude-[a-z0-9\-\.]+$/.test(model)
     ? model
-    : 'claude-sonnet-4-20250514';
+    : 'claude-3-5-sonnet-20241022';
   const resolvedMaxTokens  = typeof max_tokens === 'number' && max_tokens > 0 && max_tokens <= 4096
     ? max_tokens
     : 1000;
@@ -498,4 +498,3 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Brigata proxy listening on :${PORT}`));
-
